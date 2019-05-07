@@ -41,7 +41,7 @@
     for(i=0; i<M; i++)
       for(j=0; j<N; j++)
         sum += a[i][j];
-    ``` 
+    ```
     ```
     for(j=0; j<M; j++)
       for(i=0; i<N; i++)
@@ -50,121 +50,124 @@
 > Memory mountain
 # 第7章 链接
 > Compiler Driver
-  - Source files:
-    - *.c (ASCII source file)
-  - Translators:
-    - cpp(C preprocessor) -> *.i (ASCII intermediate file)
-    - ccl(C compiler) -> *.s (ASCII assembly-language file)
-    - as(assembler) -> *.o (relocatable object file)
-  - Linker:
-    - ld(linker program) -> *.elf (executable object file)
-> Static Linking
-  - Symbol resolution
-  - Relocation
-> Object File
-  - 分类：
-    - Relocatable object file
-      - Windows -> *.obj
-      - Linux -> *.o
-    - Executable object file
-      - Windows -> *.exe
-      - Linux -> /bin/bash
-    - Shared object file 
-      - Windows -> *.dll
-      - Linux -> *.so
-  - Format (COFF)
-    - Windows -> Portable Executable(PE)
-    - MacOS-X -> Mach-O
-    - x86-64 Linux & Unix -> Executable and Linkable Format(ELF)
-  - Relocatable Object Files
-    - ELF header:
-      1. 生成该文件的系统的字的大小和字节顺序
-      2. ELF header的大小
-      3. 目标文件的类型（relocatable， executable or shared）
-      4. 机器类型（e.g. x86-64)
-      5. section header table的文件偏移，以及其中entry的大小和数量
-    - .text:(Ndx=1)
-      - 已编译的机器代码
-    - .rodata:
-      - 只读数据
-    - .data:(Ndx=3)
-      - 已初始化的全局和静态变量
-    - .bss:（Better save space）
-      - 未初始化的全局和静态变量
-      - 初始化为0的全局和静态变量
-      - 占位符，不占据实际空间；运行时，内存分配，初始值为0
-    - .symtab:
-      - 符号表：定义和引用的函数和全局变量的信息
-      - 类型：
-        - 全局符号： 非静态函数和全局变量
-        - 外部符号： 引用的非静态函数和全局变量
-        - 局部符号： static属性的函数和全局变量（对外部模块不可见）
-      - Entry:
-        - name: String table offset
-        - type: Function or Data
-        - binding: Local or Global
-        - value: Section offset or absolute address
-        - section: <=> Ndx
-          - pseudosection:（仅出现在可重定位目标文件）
-            - ABS: 不该被重定位的符号
-            - UNDEF： 未定义符号
-            - COMMON： 未被分配位置的未初始化数据（未初始化的全局变量，其他是.bss），也即弱全局符号
-      - Resolution:
-        - Rules:（Linux链接器）
-          1. 不允许多个同名的强符号
-          2. 强符号和弱符号同名，选择强符号
-          3. 多个弱符号同名，任意选择一个
-        - static library:
-          - Linux中archive
-          - E-可重定位目标文件集合，U-未解析符号集合，D-已定义符号集合
-          - *.a位置很重要
-    - .rel.text：
-      - .text节中的位置列表，链接时修改位置
-      - 任何调用外部函数或者引用全局变量的指令
-      - 可执行目标文件中通常省略
-    - .rel.data:
-      - 被引用或定义的所有全局变量的重定位信息
-    - .debug:
-      - 局部变量和类型定义、定义和引用的全局变量、原始C源文件
-      - 以-g选项调用才生成
-    - .line:
-      - 源文件中行号与.text中机器指令的映射
-      - 以-g选项调用才生成
-    - .strtab:
-      - .symtab和.debug中的符号表
-      - section header中的section name
-    - Section header table:
-      - 描述了不同section的位置和大小
-      - 每个section有固定大小的entry
-  - Relocation:
-    - Entries:(.rel.text & .rel.data)
-      - offset: 要被修改的重定位处的节偏移
-      - type:
-        - R_X86_64_PC32: PC相对地址，PC指向下一条指令
-        - R_X86_64_32： 绝对寻址
-      - symbol: 某全局变量或者函数
-      - addend: 偏移调整
-    - 算法：
-      - 首先： refptr = s + r.offset（要被修改的重定位位置）
-      - PC相对引用：
-        1. refaddr = ADDR(s) + r.offset（要被修改的地方的运行时地址 = 当前section的运行时地址 + 偏移量）
-        2. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr)（把要被修改的地方的值改为运行时相对地址）
-      - 绝对引用：
-        1. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr) （把要被修改的地方的值改为绝对地址）
-  - Executable Object Files
-    - 文件格式：
-      1. ELF头还包括了程序入口点（entry point）
-      2. .text,.rodata和.data与可重定位目标文件相似
-      3. .init定义了函数_init，程序初始化代码调用
-      4. 不再需要.rel节
-    - 对齐要求：vaddr mod align = off mod align（起始地址和节偏移量对齐）
-    - 加载
-  - Dynamic Linking with Shared Libraries
-    - 目标： 解决static library的缺陷（显式更新，浪费内存）
-    - Linux系统接口：
-    ```
-    #include <dlfcn.h>
-    
+>   - Source files:
+>
+>     - *.c (ASCII source file)
+>   - Translators:
+>     - cpp(C preprocessor) -> *.i (ASCII intermediate file)
+>     - ccl(C compiler) -> *.s (ASCII assembly-language file)
+>     - as(assembler) -> *.o (relocatable object file)
+>   - Linker:
+>     - ld(linker program) -> *.elf (executable object file)
+>     Static Linking
+>   - Symbol resolution
+>   - Relocation
+>   Object File
+>   - 分类：
+>     - Relocatable object file
+>       - Windows -> *.obj
+>       - Linux -> *.o
+>     - Executable object file
+>       - Windows -> *.exe
+>       - Linux -> /bin/bash
+>     - Shared object file 
+>       - Windows -> *.dll
+>       - Linux -> *.so
+>   - Format (COFF)
+>     - Windows -> Portable Executable(PE)
+>     - MacOS-X -> Mach-O
+>     - x86-64 Linux & Unix -> Executable and Linkable Format(ELF)
+>   - Relocatable Object Files
+>     - ELF header:
+>       1. 生成该文件的系统的字的大小和字节顺序
+>       2. ELF header的大小
+>       3. 目标文件的类型（relocatable， executable or shared）
+>       4. 机器类型（e.g. x86-64)
+>       5. section header table的文件偏移，以及其中entry的大小和数量
+>     - .text:(Ndx=1)
+>       - 已编译的机器代码
+>     - .rodata:
+>       - 只读数据
+>     - .data:(Ndx=3)
+>       - 已初始化的全局和静态变量
+>     - .bss:（Better save space）
+>       - 未初始化的全局和静态变量
+>       - 初始化为0的全局和静态变量
+>       - 占位符，不占据实际空间；运行时，内存分配，初始值为0
+>     - .symtab:
+>       - 符号表：定义和引用的函数和全局变量的信息
+>       - 类型：
+>         - 全局符号： 非静态函数和全局变量
+>         - 外部符号： 引用的非静态函数和全局变量
+>         - 局部符号： static属性的函数和全局变量（对外部模块不可见）
+>       - Entry:
+>         - name: String table offset
+>         - type: Function or Data
+>         - binding: Local or Global
+>         - value: Section offset or absolute address
+>         - section: <=> Ndx
+>           - pseudosection:（仅出现在可重定位目标文件）
+>             - ABS: 不该被重定位的符号
+>             - UNDEF： 未定义符号
+>             - COMMON： 未被分配位置的未初始化数据（未初始化的全局变量，其他是.bss），也即弱全局符号
+>       - Resolution:
+>         - Rules:（Linux链接器）
+>           1. 不允许多个同名的强符号
+>           2. 强符号和弱符号同名，选择强符号
+>           3. 多个弱符号同名，任意选择一个
+>         - static library:
+>           - Linux中archive
+>           - E-可重定位目标文件集合，U-未解析符号集合，D-已定义符号集合
+>           - *.a位置很重要
+>     - .rel.text：
+>       - .text节中的位置列表，链接时修改位置
+>       - 任何调用外部函数或者引用全局变量的指令
+>       - 可执行目标文件中通常省略
+>     - .rel.data:
+>       - 被引用或定义的所有全局变量的重定位信息
+>     - .debug:
+>       - 局部变量和类型定义、定义和引用的全局变量、原始C源文件
+>       - 以-g选项调用才生成
+>     - .line:
+>       - 源文件中行号与.text中机器指令的映射
+>       - 以-g选项调用才生成
+>     - .strtab:
+>       - .symtab和.debug中的符号表
+>       - section header中的section name
+>     - Section header table:
+>       - 描述了不同section的位置和大小
+>       - 每个section有固定大小的entry
+>   - Relocation:
+>     - Entries:(.rel.text & .rel.data)
+>       - offset: 要被修改的重定位处的节偏移
+>       - type:
+>         - R_X86_64_PC32: PC相对地址，PC指向下一条指令
+>         - R_X86_64_32： 32位绝对寻址
+>         - R_X86_64_64:    64位绝对地址
+>       - symbol: 某全局变量或者函数
+>       - addend: 偏移调整
+>     - 算法：
+>       - 首先： refptr = s + r.offset（要被修改的重定位位置）
+>       - PC相对引用：
+>         1. refaddr = ADDR(s) + r.offset（要被修改的地方的运行时地址 = 当前section的运行时地址 + 偏移量）
+>         2. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr)（把要被修改的地方的值改为运行时相对地址）
+>       - 绝对引用：
+>         1. *refptr = (unsigned)(ADDR(r.symbol) + r.addend) （把要被修改的地方的值改为绝对地址）
+>   - Executable Object Files
+>     - 文件格式：
+>       1. ELF头还包括了程序入口点（entry point）
+>       2. .text,.rodata和.data与可重定位目标文件相似
+>       3. .init定义了函数_init，程序初始化代码调用
+>       4. 不再需要.rel节
+>     - 对齐要求：vaddr mod align = off mod align（起始地址和节偏移量对齐）
+>     - 加载
+>   - Dynamic Linking with Shared Libraries
+>     - 目标： 解决static library的缺陷（显式更新，浪费内存）
+>     - Linux系统接口：
+>     ```
+>     #include <dlfcn.h>
+>     ```
+
     //成功返回指向句柄的指针，出错返回NULL
     //filename: ./*.so
     //flag: RTLD_NOW(立即解析对外部符号的引用)，RTLD_LAZY(推迟符号解析直到执行来自库中的代码)
@@ -205,7 +208,7 @@
 > Exceptions：
   - Instruction curr --Exception--> Exception processing --> I curr / I next / Abort
   - Type:  
-  
+
     类别|原因|异步同步|返回行为
     :--:|:--|:--:|:--
     Interrupt|来自IO设备的信号|Async|返回到下一条指令
@@ -252,21 +255,22 @@
     32-255 | 操作系统定义的异常 | Interrupt or Trap
     
 > Processes
-  - 两个关键抽象：
-    1. 一个独立的逻辑控制流
-    2. 一个私有的地址空间
-  - 区分两个概念：
-    1. 并发(concurrency)：time slice有交叉
-    2. 并行(parallel)：多核处理和多机协同
-  - 理解：
-    1. User Mode & Kernel Mode
-    2. Context Switches
-  - Process Control:
-    1. 获取进程ID
-    ```
-    #include <sys/types.h> //定义了pid_t为int
-    #include <unistd.h>
-    
+>   - 两个关键抽象：
+>     1. 一个独立的逻辑控制流
+>     2. 一个私有的地址空间
+>   - 区分两个概念：
+>     1. 并发(concurrency)：time slice有交叉
+>     2. 并行(parallel)：多核处理和多机协同
+>   - 理解：
+>     1. User Mode & Kernel Mode
+>     2. Context Switches
+>   - Process Control:
+>     1. 获取进程ID
+>     ```
+>     #include <sys/types.h> //定义了pid_t为int
+>     #include <unistd.h>
+>     ```
+
     pid_t getpid(void);//返回当前进程PID
     pid_t getppid(void);//返回父进程PID
     ```
@@ -328,7 +332,7 @@
     ```
     ```
     #include <stdlib.h>
-
+    
     //在环境变量数组中搜索“name=value”，若存在则返回指向value的指针，否则返回NULL
     char *getenv(const char *name);
     //成功返回0，失败返回-1.
@@ -338,52 +342,53 @@
     void unsetenv(const char *name);
     ```
 > Signals
-  - Sending Signals
-    - 一个进程可以发送信号给自己
-    - process group:
-    ```
-    #include <unistd.h>
-    //返回调用进程的进程组ID
-    pid_t getpgrp(void);
-    //将进程pid的进程组改为pgid
-    //pid=0 => 使用当前进程pid
-    //pgid=0 => 使用pid作为进程组ID
-    //成功返回0，失败返回-1
-    int setpgid(pid_t pid, pid_t pgid);
-    ```
-    - 使用程序  
-    `linux> /bin/kill -9 15213 //发给进程`
-    `linux> /bin/kill -9 -15213 //发给进程组的每个进程`
-    - 键盘发送
-      - Ctrl+C 发送SIGINT到前台进程组的每个进程，终止作业
-      - Ctrl+Z 发送SIGTSTP到前台进程组的每个进程，停止（挂起suspend）作业
-    - kill函数
-    ```
-    #include <sys/types.h>
-    #include <signal.h>
-    //pid=0 => 发送给调用进程所在进程组的每个进程，包括自己
-    //pid<0 => 发送给进程组中每个进程
-    //pid>0 => 发送给某个进程
-    //成功返回0，错误返回-1
-    int kill(pid_t pid, int sig);
-    ```
-    - alarm函数
-    ```
-    #include <unistd.h>
-    //向自己发送SIGALRM信号
-    //返回前一次闹钟剩余的秒数，若以前没有设定闹钟就返回0
-    //secs=0 => 不安排新的闹钟
-    //任何调用都将取消待处理（pending）的闹钟
-    unsigned int alarm(unsigned int secs);
-    ```
-  - Receiving Signals
-  ```
-  #include <signal.h>
-  typedef void (*sighandler_t)(int);
-  //可以修改信号相关联的默认行为，SIGSTOP和SIGKILL不可修改
-  //handler=SIG_IGN => 忽略signum的信号
-  //handler=SIG_DFL => 恢复signum的默认行为
-  
+>   - Sending Signals
+>     - 一个进程可以发送信号给自己
+>     - process group:
+>     ```
+>     #include <unistd.h>
+>     //返回调用进程的进程组ID
+>     pid_t getpgrp(void);
+>     //将进程pid的进程组改为pgid
+>     //pid=0 => 使用当前进程pid
+>     //pgid=0 => 使用pid作为进程组ID
+>     //成功返回0，失败返回-1
+>     int setpgid(pid_t pid, pid_t pgid);
+>     ```
+>     - 使用程序  
+>     `linux> /bin/kill -9 15213 //发给进程`
+>     `linux> /bin/kill -9 -15213 //发给进程组的每个进程`
+>     - 键盘发送
+>       - Ctrl+C 发送SIGINT到前台进程组的每个进程，终止作业
+>       - Ctrl+Z 发送SIGTSTP到前台进程组的每个进程，停止（挂起suspend）作业
+>     - kill函数
+>     ```
+>     #include <sys/types.h>
+>     #include <signal.h>
+>     //pid=0 => 发送给调用进程所在进程组的每个进程，包括自己
+>     //pid<0 => 发送给进程组中每个进程
+>     //pid>0 => 发送给某个进程
+>     //成功返回0，错误返回-1
+>     int kill(pid_t pid, int sig);
+>     ```
+>     - alarm函数
+>     ```
+>     #include <unistd.h>
+>     //向自己发送SIGALRM信号
+>     //返回前一次闹钟剩余的秒数，若以前没有设定闹钟就返回0
+>     //secs=0 => 不安排新的闹钟
+>     //任何调用都将取消待处理（pending）的闹钟
+>     unsigned int alarm(unsigned int secs);
+>     ```
+>   - Receiving Signals
+>   ```
+>   #include <signal.h>
+>   typedef void (*sighandler_t)(int);
+>   //可以修改信号相关联的默认行为，SIGSTOP和SIGKILL不可修改
+>   //handler=SIG_IGN => 忽略signum的信号
+>   //handler=SIG_DFL => 恢复signum的默认行为
+>   ```
+
   sighandler_t signal(int signum, sighandler_t handler);
   ```
   - Blocking and Unblocking Signals
@@ -399,7 +404,7 @@
   int sigfillset(sigset_t *set);
   int sigaddset(sigset_t *set, int signum);
   int sigdelset(sigset_t *set, int signum);
-  
+
   //signum是set的成员返回1，不是返回0，出错返回-1
   int sigismember(const sigset_t *set, int signum);
   ```
@@ -426,7 +431,7 @@
       1. signal的函数语义各有不同
       2. 系统调用可以被中断  
       解决方案：Posix标准
-      ```
+  ```
       #include <signal.h>
       
       //成功返回0，出错返回-1
@@ -458,14 +463,15 @@
     int sigsuspend(const sigset_t *mask);
     ```
 > Nonlocal Jumps
-  ```
-  #include <setjmp.h>
-  
+>   ```
+>   #include <setjmp.h>
+>   ```
+
   //自己调用返回0，longjump调用返回非零
   int setjmp(jmp_buf env);
   //sig-是可以被信号处理程序使用的版本，savesigs表明是否保存信号到上下文
   int sigsetjmp(sigjmp_buf env, int savesigs);
-  
+
   //retval设置了到setjmp的返回值
   void longjmp(jmp_buf env, int retval);
   void siglongjmp(sigjmp_buf env, int retval);
@@ -501,7 +507,7 @@
     //9种权限：S_IR(W or X)USR(GRP or OTH)  
               读/写/执行 * 拥有者/所在组成员/其他任何人
     int open(char *filename, int flags, mode_t mode);
-    ```
+  ```
     ```
     #include <unistd.h>
     //成功返回0，出错返回-1
@@ -519,20 +525,21 @@
     ssize_t write(int fd, const void *buf, size_t n);
     ```
 > RIO
-  - 无缓冲的RIO
-  ```
-  #include "csapp.h"
-  //成功返回传送的字节数，若EOF返回0，出错返回-1
-  ssize_t rio_readn(int fd, void *usrbuf, size_t n);
-  sszie_t rio_writen(int fd, void *usrbuf, size_t n);
-  ```
-  - 带缓冲的RIO
-  ```
-  #include "csapp.h"
-  
+>   - 无缓冲的RIO
+>   ```
+>   #include "csapp.h"
+>   //成功返回传送的字节数，若EOF返回0，出错返回-1
+>   ssize_t rio_readn(int fd, void *usrbuf, size_t n);
+>   sszie_t rio_writen(int fd, void *usrbuf, size_t n);
+>   ```
+>   - 带缓冲的RIO
+>   ```
+>   #include "csapp.h"
+>   ```
+
   //把fd和rp处的一个类型为rio_t的读缓冲区联系起来
   void rio_readinitb(rio_t *rp, int fd);
-  
+
   //成功返回读的字节数，EOF返回0，出错返回-1
   ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen);
   sszie_t rio_readnb(rio_t *rp, void *usrbuf, size_t n);
@@ -541,7 +548,7 @@
   ```
   #include <unistd.h>
   #include <sys/stat.h>
-  
+
   //检索关于文件的信息
   //st_size 文件字节数大小
   //st_mode 文件访问许可位
@@ -556,13 +563,13 @@
   ```
   #include <sys/types.h>
   #include <dirent.h>
-  
+
   //成功返回directory stream指针，否则为NULL
   DIR *opendir(const char *name);
-  
+
   //成功返回下一个directory entry,否则为NULL
   struct dirent *readdir(DIR *dirp);
-  
+
   //成功返回0，错误返回-1
   int closedir(DIR *dirp);
   ```
@@ -580,3 +587,5 @@
   ```
 > Standard I/O
   
+
+  ```
